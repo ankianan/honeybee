@@ -1,0 +1,12 @@
+const ADD_PLAYER = "ADD_PLAYER";
+const REMOVE_PLAYER = "REMOVE_PLAYER";
+
+const SWIPE_TO = "SWIPE_TO";
+const SWIPE_UP = "SWIPE_UP";
+
+export {
+    SWIPE_TO,
+    SWIPE_UP,
+    ADD_PLAYER,
+    REMOVE_PLAYER
+};

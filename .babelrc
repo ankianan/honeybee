@@ -1,0 +1,19 @@
+{
+  "presets": [
+    [
+      "es2015",
+      {
+        "modules": false
+      }
+    ],"stage-0"
+  ],
+  "plugins": [
+                "es6-promise",
+    "transform-function-bind",
+    "external-helpers",
+    "transform-object-rest-spread",
+    ["transform-react-jsx", {
+      "pragma": "React.createElement" // default pragma is React.createElement
+    }]
+  ]
+}
