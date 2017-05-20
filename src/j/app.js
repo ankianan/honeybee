@@ -19866,7 +19866,7 @@
 	                            "li",
 	                            { style: inlineStyle, key: uId },
 	                            _this2.state.players[uId].name,
-	                            isHolder || true ? createElement$1(
+	                            isHolder ? createElement$1(
 	                                "div",
 	                                null,
 	                                createElement$1(

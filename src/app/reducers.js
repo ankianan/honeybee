@@ -5,7 +5,8 @@ import {
     SWIPE_UP,
     SWIPE_TO,
     ADD_PLAYER,
-    REMOVE_PLAYER
+    REMOVE_PLAYER,
+    REPLACE_PLAYER
 } from "./actionTypes.js";
 
 
@@ -67,6 +68,8 @@ const players = (state = defaultPlayers, action) => {
 
 const sequence = (state = [ /* array of uIds*/ ], action) => {
     switch (action.type) {
+        case REPLACE_PLAYER:
+            return action.payload.sequence;
         case ADD_PLAYER:
             return state.concat(action.payload.uId);
         case REMOVE_PLAYER:

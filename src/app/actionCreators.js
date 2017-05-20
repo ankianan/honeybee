@@ -2,7 +2,8 @@ import {
     SWIPE_TO,
     SWIPE_UP,
     ADD_PLAYER,
-    REMOVE_PLAYER
+    REMOVE_PLAYER,
+    REPLACE_PLAYER
 } from "./actionTypes.js";
 
 const swipeTo = (fromId, toId) => {
@@ -34,6 +35,13 @@ const addPlayer = (uId) => {
     }
 }
 
+const replacePlayer = ({ sequence }) => {
+    return {
+        type: REPLACE_PLAYER,
+        payload: { sequence }
+    }
+}
+
 const removePlayer = (uId, players) => {
     return {
         type: REMOVE_PLAYER,
@@ -45,4 +53,4 @@ const removePlayer = (uId, players) => {
 }
 
 
-export { swipeTo, swipeUp, addPlayer, removePlayer };
+export { swipeTo, swipeUp, addPlayer, replacePlayer, removePlayer };
