@@ -29,7 +29,8 @@ class AppShell extends React.PureComponent {
             //MeshPeer connection
             this.peer = new MeshPeer({
                 peerConfig: {
-                    key: apiKey
+                    key: apiKey,
+                    secure:true
                 },
                 players: this.state.players,
                 dispatch: this.store.dispatch
@@ -41,7 +42,8 @@ class AppShell extends React.PureComponent {
             //MeshPeer connection
             this.peer = new MeshPeer({
                 peerConfig: {
-                    key: apiKey
+                    key: apiKey,
+                    secure:true
                 },
                 players: this.state.players,
                 dispatch: this.store.dispatch

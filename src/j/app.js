@@ -20953,7 +20953,8 @@
 	            //MeshPeer connection
 	            _this.peer = new MeshPeer({
 	                peerConfig: {
-	                    key: apiKey
+	                    key: apiKey,
+	                    secure: true
 	                },
 	                players: _this.state.players,
 	                dispatch: _this.store.dispatch
@@ -20965,7 +20966,8 @@
 	            //MeshPeer connection
 	            _this.peer = new MeshPeer({
 	                peerConfig: {
-	                    key: apiKey
+	                    key: apiKey,
+	                    secure: true
 	                },
 	                players: _this.state.players,
 	                dispatch: _this.store.dispatch
