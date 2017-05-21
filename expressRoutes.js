@@ -1,5 +1,5 @@
 var expressRoutes = {
-    "splashScreen": "/",
+    "peer": "/:destPeerId",
 }
 
 module.exports = expressRoutes;

@@ -6,6 +6,7 @@ import reducer from "./reducers.js";
 import * as actions from "./actionCreators.js";
 import { apiKey } from "./config.js";
 import page from "page";
+import expressRoutes from "../../expressRoutes.js";
 import MeshPeer from "./MeshPeer/MeshPeer.js";
 class AppShell extends React.PureComponent {
     constructor() {
@@ -19,8 +20,11 @@ class AppShell extends React.PureComponent {
         this.onSwipeLeft = this.onSwipeLeft.bind(this);
         this.onSwipeRight = this.onSwipeRight.bind(this);
         this.onSwipeUp = this.onSwipeUp.bind(this);
-
-        page("/:destPeerId", (ctx, next) => {
+        page({
+            "popstate": true,
+            "dispatch": false //Prevent default initalPathname handling
+        });
+        page(expressRoutes.peer, (ctx, next) => {
             //MeshPeer connection
             this.peer = new MeshPeer({
                 peerConfig: {
@@ -29,11 +33,12 @@ class AppShell extends React.PureComponent {
                 players: this.state.players,
                 dispatch: this.store.dispatch
             });
-            if (ctx.param.destPeerId) {
-                this.peer.connectTo(ctx.param.destPeerId);
+            if (ctx.params.destPeerId && ctx.params.destPeerId!="0") {
+                this.peer.connect(ctx.params.destPeerId);
             }
             this.store.subscribe(this.peer.onStoreUpdate);
         });
+        page.redirect(document.location.pathname);
     }
     onSwipeRight(e) {
         let fromId = e.target.dataset.uid;
@@ -60,7 +65,7 @@ class AppShell extends React.PureComponent {
     }
     render() {
         return <div>
-            <button onClick={::this.onAddPlayer}>ADD Player</button>
+            {/*<button onClick={::this.onAddPlayer}>ADD Player</button>*/}
             <h1>Sequence of Players with holders highlighted</h1>
             <ul>{
                 this.state.sequence.map((uId,index)=>{                  

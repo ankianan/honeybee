@@ -1,3 +1,3 @@
-const apiKey = '45x1mf8qyx7833di';
+const apiKey = 'bixfuxcgpjw3tyb9';
 
-export{apiKey};
+export { apiKey };

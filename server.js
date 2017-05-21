@@ -18,7 +18,7 @@ app.use(express.static(__dirname + '/src'));
 
 //All the requests to the server are entertained. Route handling is configured in RouteConfig
 app.get('/*', function(req, res) {
-    res.sendFile(path.join(__dirname + '/main.html'));
+    res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 var convertToRegexRoutes = function(routes) {

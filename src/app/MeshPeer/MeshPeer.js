@@ -1,5 +1,5 @@
 import { batchActions } from 'redux-batched-actions';
-import actionCreators from "../actionCreators.js";
+import * as actionCreators from "../actionCreators.js";
 const timeout_processConnQ = 1000;
 
 export default class MeshPeer {
@@ -29,19 +29,17 @@ export default class MeshPeer {
             this.peer.connect(destPeerId, connectOptions);
         });
 
-        this.props.dispatch(actionCreators.addPlayers(destPeerIds));
+        this.props.dispatch(batchActions(actionCreators.addPlayers(destPeerIds)));
     }
     onError() {
-        /**
-         * To be done
-         */
+        console.warn(...arguments);
     }
     onOpen(peerId) { //{R}R
         this.props.dispatch(actionCreators.addPlayer(peerId));
         this.peer.on("connection", this.onConnection.bind(this));
         this.peer.on("data", this.onData.bind(this));
     }
-    onConnection(conn) {//{R}R{R,A}//{R,A}R{R,A,B}//{R,A}A{R,A,B}
+    onConnection(conn) { //{R}R{R,A}//{R,A}R{R,A,B}//{R,A}A{R,A,B}
         this.props.dispatch(actionCreators.addPlayer(conn.peerId));
         this.connQ.push(conn);
     }

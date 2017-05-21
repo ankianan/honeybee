@@ -1,1 +1,1 @@
-module.exports={"splashScreen":"/^(?:\\/(?=$))?$/i"}
+module.exports={"peer":"/^\\/([^\\/]+?)(?:\\/(?=$))?$/i"}
