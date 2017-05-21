@@ -20812,7 +20812,8 @@
 	  page.sameOrigin = sameOrigin;
 
 	var expressRoutes = {
-	    "peer": "/:destPeerId"
+	  "creategame": "/",
+	  "peer": "/:destPeerId"
 	};
 
 	var expressRoutes_1 = expressRoutes;
@@ -20946,8 +20947,8 @@
 	        _this.onSwipeUp = _this.onSwipeUp.bind(_this);
 	        index$6({
 	            "popstate": true,
-	            "dispatch": false //Prevent default initalPathname handling
-	        });
+	            "dispatch": false });
+	        index$6.base("/honeybee");
 	        index$6(expressRoutes_1.peer, function (ctx, next) {
 	            //MeshPeer connection
 	            _this.peer = new MeshPeer({
@@ -20957,11 +20958,21 @@
 	                players: _this.state.players,
 	                dispatch: _this.store.dispatch
 	            });
-	            if (ctx.params.destPeerId && ctx.params.destPeerId != "0") {
-	                _this.peer.connect(ctx.params.destPeerId);
-	            }
+	            _this.peer.connect(ctx.params.destPeerId);
 	            _this.store.subscribe(_this.peer.onStoreUpdate);
 	        });
+	        index$6(expressRoutes_1.creategame, function (ctx, next) {
+	            //MeshPeer connection
+	            _this.peer = new MeshPeer({
+	                peerConfig: {
+	                    key: apiKey
+	                },
+	                players: _this.state.players,
+	                dispatch: _this.store.dispatch
+	            });
+	            _this.store.subscribe(_this.peer.onStoreUpdate);
+	        });
+
 	        index$6.redirect(document.location.pathname);
 	        return _this;
 	    }

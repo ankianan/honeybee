@@ -22,8 +22,9 @@ class AppShell extends React.PureComponent {
         this.onSwipeUp = this.onSwipeUp.bind(this);
         page({
             "popstate": true,
-            "dispatch": false //Prevent default initalPathname handling
+            "dispatch": false, //Prevent default initalPathname handling            
         });
+        page.base("/honeybee");
         page(expressRoutes.peer, (ctx, next) => {
             //MeshPeer connection
             this.peer = new MeshPeer({
@@ -33,11 +34,21 @@ class AppShell extends React.PureComponent {
                 players: this.state.players,
                 dispatch: this.store.dispatch
             });
-            if (ctx.params.destPeerId && ctx.params.destPeerId!="0") {
-                this.peer.connect(ctx.params.destPeerId);
-            }
+            this.peer.connect(ctx.params.destPeerId);
             this.store.subscribe(this.peer.onStoreUpdate);
         });
+        page(expressRoutes.creategame, (ctx, next) => {
+            //MeshPeer connection
+            this.peer = new MeshPeer({
+                peerConfig: {
+                    key: apiKey
+                },
+                players: this.state.players,
+                dispatch: this.store.dispatch
+            });
+            this.store.subscribe(this.peer.onStoreUpdate);
+        });
+
         page.redirect(document.location.pathname);
     }
     onSwipeRight(e) {

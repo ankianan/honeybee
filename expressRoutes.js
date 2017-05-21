@@ -1,5 +1,6 @@
 var expressRoutes = {
-    "peer": "/:destPeerId",
+	"creategame" : "/",
+    "peer": "/:destPeerId"
 }
 
 module.exports = expressRoutes;

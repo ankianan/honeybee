@@ -17,7 +17,7 @@ app.use(express.static(__dirname + '/src'));
 
 
 //All the requests to the server are entertained. Route handling is configured in RouteConfig
-app.get('/*', function(req, res) {
+app.get('/honeybee*', function(req, res) {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 
