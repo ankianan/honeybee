@@ -19790,8 +19790,6 @@
 	    });
 	};
 
-	var apiKey = 'bixfuxcgpjw3tyb9';
-
 	var index$9 = Array.isArray || function (arr) {
 	  return Object.prototype.toString.call(arr) == '[object Array]';
 	};
@@ -20826,7 +20824,8 @@
 
 	        this.props = props;
 	        this.peer = new Peer(this.props.peerConfig);
-	        this.peer.on("onOpen", this.onOpen.bind(this));
+	        this.peer.on("open", this.onOpen.bind(this));
+	        this.peer.on("error", this.onError.bind(this));
 	        this.connQ = [];
 	        this.timer_processConnQ = 0;
 	    }
@@ -20839,7 +20838,7 @@
 	            var destPeerIds = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	            //{A}A{R,A}//{B}B{R,B}//{R,B}B{R,A,B}
 	            //String or array of string
-	            destPeerIds = destPeerIds.concat([]);
+	            destPeerIds = [].concat(destPeerIds);
 
 	            var connectOptions = {
 	                metaData: {
@@ -20893,7 +20892,7 @@
 
 	            //Process conn queue in debounced fashion
 	            clearTimeout(this.timer_processConnQ);
-	            timer_processConnQ = setTimeout(function () {
+	            this.timer_processConnQ = setTimeout(function () {
 	                _this2.connQ.forEach(function (conn) {
 	                    var missingPlayerIds = Object.keys(nextProps.players).filter(function (playerId) {
 	                        return conn.metaData.playerIds.indexOf(playerId) == -1;
@@ -20936,7 +20935,7 @@
 
 	        var _this = possibleConstructorReturn(this, (AppShell.__proto__ || Object.getPrototypeOf(AppShell)).apply(this, arguments));
 
-	        _this.state = { sequence: [] };
+	        _this.state = { sequence: [], players: {} };
 	        _this.store = createStore(reducer, _this.state, applyMiddleware(logger));
 	        _this.store.subscribe(function () {
 	            _this.setState(_this.store.getState());
@@ -20949,30 +20948,23 @@
 	            "popstate": true,
 	            "dispatch": false });
 	        index$6.base("/honeybee");
-	        index$6(expressRoutes_1.peer, function (ctx, next) {
+	        index$6("*", function (ctx, next) {
 	            //MeshPeer connection
 	            _this.peer = new MeshPeer({
 	                peerConfig: {
-	                    key: apiKey,
-	                    secure: true
+	                    host: 'localhost',
+	                    port: 9000
 	                },
 	                players: _this.state.players,
 	                dispatch: _this.store.dispatch
 	            });
-	            _this.peer.connect(ctx.params.destPeerId);
-	            _this.store.subscribe(_this.peer.onStoreUpdate);
+	            _this.store.subscribe(function () {
+	                _this.peer.onStoreUpdate(_this.store.getState);
+	            });
+	            next();
 	        });
-	        index$6(expressRoutes_1.creategame, function (ctx, next) {
-	            //MeshPeer connection
-	            _this.peer = new MeshPeer({
-	                peerConfig: {
-	                    key: apiKey,
-	                    secure: true
-	                },
-	                players: _this.state.players,
-	                dispatch: _this.store.dispatch
-	            });
-	            _this.store.subscribe(_this.peer.onStoreUpdate);
+	        index$6(expressRoutes_1.peer, function (ctx, next) {
+	            _this.peer.connect(ctx.params.destPeerId);
 	        });
 
 	        index$6.redirect(document.location.pathname);

@@ -1,79 +1,135 @@
 import { batchActions } from 'redux-batched-actions';
-import * as actionCreators from "../actionCreators.js";
-const timeout_processConnQ = 1000;
-
 export default class MeshPeer {
-    static propTypes = {
-        peerConfig: Object,
-        dispatch: Function,
-        players: Object
-    }
     constructor(props) {
-        this.props = props;
-        this.peer = new Peer(this.props.peerConfig);
-        this.peer.on("onOpen", this.onOpen.bind(this));
-        this.connQ = [];
-        this.timer_processConnQ = 0;
-    }
-    connect(destPeerIds = []) { //{A}A{R,A}//{B}B{R,B}//{R,B}B{R,A,B}
-        //String or array of string
-        destPeerIds = destPeerIds.concat([]);
-
-        let connectOptions = {
-            metaData: {
-                playerIds: Object.keys(this.props.players).concat(destPeerIds)
-            }
+        this.peer = new Peer(props.peerConfig);
+        this.state = {
+            connMap: {}
         };
-        destPeerIds.forEach((destPeerId) => {
-            //Refer Peer js API        
-            this.peer.connect(destPeerId, connectOptions);
-        });
+        this.peer.on("open", ::this.onOpen);
+        this.peer.on("error", ::this.onError);
+        this.peer.on("connection", ::this.onConnection);
+        this.peer.on("data", ::this.onData);
+    }
+    connect(destPeerId) {
+        /**
+         * Add dest peer to players
+         */
+        this.props.dispatch(this.props.addPlayer({
+            uId: destPeerId,
+            status: "toBeConnected"
+        }))
+    }
+    connectMultuple(destPeerIdList) {
+        /**
+         * Add dest peers to players
+         */
+        this.props.dispatch(batchActions(destPeerIdList.map(destPeerId => {
+            uId: destPeerId,
+            status: "toBeConnected"
+        })));
+    }
+    onOpen(peerId) {
+        /**
+         * Add self to players
+         */
+        this.props.dispatch(this.props.addPlayer({
+            uId: peerId,
+            status: "connected"
+        }));
+    }
+    onConnection(conn) {
+        this.connMap[conn.peerId] = conn;
+        /**
+         * Add remote peer to players
+         */
+        this.props.dispatch(this.props.addPlayer({
+            uId: conn.peerId,
+            metadata: conn.metadata
+            status: "toBeNotified"
+        }));
 
-        this.props.dispatch(batchActions(actionCreators.addPlayers(destPeerIds)));
-    }
-    onError() {
-        console.warn(...arguments);
-    }
-    onOpen(peerId) { //{R}R
-        this.props.dispatch(actionCreators.addPlayer(peerId));
-        this.peer.on("connection", this.onConnection.bind(this));
-        this.peer.on("data", this.onData.bind(this));
-    }
-    onConnection(conn) { //{R}R{R,A}//{R,A}R{R,A,B}//{R,A}A{R,A,B}
-        this.props.dispatch(actionCreators.addPlayer(conn.peerId));
-        this.connQ.push(conn);
     }
     onData(data) {
         switch (data.type) {
-            case "CONNECT_TO":
-                this.connectTo(data.payload.playerIds)
-                break;
+            case "PEER_CONNECT_TO":
+                return this.connectMultuple(data.payload.list);
             default:
-                return true
+                return;
         }
     }
-    processConnQ(nextProps) {
-        //Process conn queue in debounced fashion
-        clearTimeout(this.timer_processConnQ);
-        timer_processConnQ = setTimeout(() => {
-            this.connQ.forEach((conn) => {
-                let missingPlayerIds = Object.keys(nextProps.players).filter(playerId => (conn.metaData.playerIds.indexOf(playerId) == -1))
-                if (missingPlayerIds.length) {
-                    conn.send({
-                        type: "CONNECT_TO",
-                        payload: {
-                            playerIds: missingPlayerIds //{A}
-                        }
-                    });
+    onError() {
+        /**
+         * On unable to connect, remove dest peer from players
+         */
+    }
+    connectOnStoreUpdate(nextProps) {
+        let playerIdList = Object.keys(nextProps.players);
+
+        nextProps.players.filter((player) => {
+            return player.status == "toBeConnected"
+        }).forEach((player) => {
+            this.connMap[player.uId] = this.peer.connect(player.uId, {
+                metaData: {
+                    playerIdList
                 }
             });
-            this.connQ = [];
-        }, timeout_processConnQ);
+            setTimeout(() => {
+                nextProps.updatePlayerState({
+                    uId: player.uId,
+                    status: "connected"
+                })
+            }, 0);
+        });
+    }
+    notifyOnStoreUpdate(nextProps) {
+        let playerIdList = Object.keys(nextProps.players);
+        nextProps.players.filter((player) => {
+            return player.status == "toBeNotified"
+        }).forEach((player) => {
+
+            let unknownPeers = playerIdList.filter(playerId => player.metadata.playerIdList.indexOf(playerId) == -1);
+            if (unknownPeers.length) {
+                this.connMap[player.uId].send({
+                    type: "PEER_CONNECT_TO",
+                    payload: {
+                        list: unknownPeers
+                    }
+                })
+            }
+
+            setTimeout(() => {
+                nextProps.updatePlayerState({
+                    uId: player.uId,
+                    status: "notified"
+                })
+            }, 0)
+        });
+    }
+    shouldComponentUpdate() {
+        for (key in nextProps) {
+            if (nextProps[key] ! = this.props.key) {
+                return true
+            }
+        }
+        return false;
     }
     onStoreUpdate(nextProps) {
-        if (nextProps.players != this.props.players) {
-            this.processConnQ(nextProps);
-            this.props.players = nextProps.players;
+        if (this.shouldComponentUpdate()) {
+            this.connectOnStoreUpdate(nextProps);
+            this.notifyOnStoreUpdate(nextProps);
+            this.props = nextProps;
         }
     }
 }
+
+/**
+ *      Open
+ * A :  {A}
+ * B :  {B}
+ * R :  {R}
+ *
+ *      Open
+ * A :  {A}
+ * B :  {B}
+ * R :  {R}
+ */

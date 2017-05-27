@@ -3,6 +3,10 @@ import {
     SWIPE_UP,
     ADD_PLAYER,
     REMOVE_PLAYER,
+    UPDATE_PLAYER_STATUS,
+    PEER_ON_OPEN,
+    PEER_CONNECT,
+    PEER_ON_CONNECTION
 } from "./actionTypes.js";
 
 const swipeTo = (fromId, toId) => {
@@ -25,19 +29,16 @@ const swipeUp = (players) => {
     }
 }
 
-const addPlayer = (uId) => {
+const addPlayer = ({ uId, status, metadata }) => {
     return {
         type: ADD_PLAYER,
         payload: {
-            uId
+            uId,
+            status,
+            metadata
         }
     }
 }
-
-const addPlayers = (uIdList) => {
-    return uIdList.map(uId=>addPlayer(uId));
-}
-
 
 const removePlayer = (uId, players) => {
     return {
@@ -49,5 +50,25 @@ const removePlayer = (uId, players) => {
     }
 }
 
+const addPlayers = ({ list, status }) => {
+    return list.map(uId => addPlayer({
+        uId,
+        status
+    }));
+}
 
-export { swipeTo, swipeUp, addPlayer, addPlayers, removePlayer };
+const updatePlayerStatus = ({ uid, status }) => {
+    return {
+        uId,
+        status
+    };
+}
+
+export {
+    swipeTo,
+    swipeUp,
+    addPlayer,
+    addPlayers,
+    updatePlayerStatus,
+    removePlayer
+};

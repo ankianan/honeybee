@@ -6,8 +6,11 @@ import {
     SWIPE_TO,
     ADD_PLAYER,
     REMOVE_PLAYER,
+    UPDATE_PLAYER_STATUS,
+    PEER_ON_OPEN,
+    PEER_CONNECT,
+    PEER_ON_CONNECTION
 } from "./actionTypes.js";
-
 
 const playerSchema = {
     uId: 0,
@@ -50,13 +53,25 @@ const defaultPlayers = { /*map of player schema*/ };
 
 const players = (state = defaultPlayers, action) => {
     switch (action.type) {
+        case UPDATE_PLAYER_STATUS:
+            {
+                let { uid, status } = action.payload;
+                return {...state,
+                    uId: {...state.uid,
+                        status
+                    }
+                };
+
+            }
         case ADD_PLAYER:
             {
-                let { uId } = action.payload;
+                let { uId, status, metadata } = action.payload;
                 return {...state,
                     [uId]: {...Object.create(playerSchema),
                         uId,
-                        name: `Player ${uId}`
+                        name: `Player ${uId}`,
+                        status,
+                        metadata
                     }
                 };
             }

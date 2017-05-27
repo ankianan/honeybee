@@ -11,7 +11,7 @@ import MeshPeer from "./MeshPeer/MeshPeer.js";
 class AppShell extends React.PureComponent {
     constructor() {
         super(...arguments);
-        this.state = { sequence: [] };
+        this.state = { sequence: [], players: {} };
         this.store = Redux.createStore(reducer, this.state, Redux.applyMiddleware(Logger));
         this.store.subscribe(() => {
             this.setState(this.store.getState())
@@ -25,30 +25,23 @@ class AppShell extends React.PureComponent {
             "dispatch": false, //Prevent default initalPathname handling            
         });
         page.base("/honeybee");
+        page("*", (ctx, next) => {
+            //MeshPeer connection
+            this.peer = new MeshPeer({
+                peerConfig: {
+                    host: 'localhost',
+                    port: 9000
+                },
+                players: this.state.players,
+                dispatch: this.store.dispatch
+            });
+            this.store.subscribe(() => {
+                this.peer.onStoreUpdate(this.store.getState)
+            });
+            next();
+        })
         page(expressRoutes.peer, (ctx, next) => {
-            //MeshPeer connection
-            this.peer = new MeshPeer({
-                peerConfig: {
-                    key: apiKey,
-                    secure:true
-                },
-                players: this.state.players,
-                dispatch: this.store.dispatch
-            });
             this.peer.connect(ctx.params.destPeerId);
-            this.store.subscribe(this.peer.onStoreUpdate);
-        });
-        page(expressRoutes.creategame, (ctx, next) => {
-            //MeshPeer connection
-            this.peer = new MeshPeer({
-                peerConfig: {
-                    key: apiKey,
-                    secure:true
-                },
-                players: this.state.players,
-                dispatch: this.store.dispatch
-            });
-            this.store.subscribe(this.peer.onStoreUpdate);
         });
 
         page.redirect(document.location.pathname);
